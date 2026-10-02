@@ -1,0 +1,48 @@
+component delayed_switch
+% Switch with Hysteresis
+
+inputs
+    u = { 0.0, '1' }; 
+end
+
+outputs
+    y = {0,'1'};
+end
+
+parameters
+    T_closed = { 0.5, '1' };      % Upper threshold
+    T_open   = { 0, '1' };        % Lower threshold
+    InitMode = customization.function.switching.open;    % Initial Mode
+end
+
+% Validate parameter values
+equations
+    assert( T_closed >= T_open, 'Upper threshold must be higher than Lower threshold' );
+end
+
+modecharts(ExternalAccess = observe)   
+    m1 = modechart
+        modes
+            mode CLOSED
+                equations
+                    y == 1;
+                end
+            end
+            mode OPEN
+                equations      
+                    y == 0;
+                end
+            end
+        end
+        transitions
+            CLOSED -> OPEN : u < T_open;
+            OPEN -> CLOSED : u > T_closed;
+        end
+        initial
+            OPEN : InitMode <= 0;
+        end
+    end
+    
+end
+
+end

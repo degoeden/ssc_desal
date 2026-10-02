@@ -1,0 +1,47 @@
+component (Hidden = true) delayed_switch_controller
+% Internal hysteresis controller for delayed_switch.
+
+inputs
+    u = {0, '1'};
+end
+
+outputs
+    y = {0, '1'};
+    area_cmd = {1e-10, 'm^2'};
+end
+
+parameters
+    min_area = {1e-10, 'm^2'};
+    max_area = {1e-4, 'm^2'};
+    T_closed = {0.5, '1'};
+    T_open = {0, '1'};
+    InitMode = customization.function.switching.open;
+end
+
+modecharts (ExternalAccess = none)
+    m1 = modechart
+        modes
+            mode CLOSED
+                equations
+                    y == 1;
+                    area_cmd == min_area;
+                end
+            end
+            mode OPEN
+                equations
+                    y == 0;
+                    area_cmd == max_area;
+                end
+            end
+        end
+        transitions
+            CLOSED -> OPEN : u < T_open;
+            OPEN -> CLOSED : u > T_closed;
+        end
+        initial
+            OPEN : InitMode <= 0;
+        end
+    end
+end
+
+end
