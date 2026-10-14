@@ -60,21 +60,21 @@ constraint(2)= constraintClass('Constraint2'); % Initialize ConstraintClass
 constraint(2).location = [0 0 -8.9];
 
 constraint(3)= constraintClass('Constraint3'); % Initialize ConstraintClass 
-%constraint(3).location =  [4.7021271782+0.9 0 -8.7];
-constraint(3).location = [9.030588 0 -8.9+4.403853]; % Brodersen approx settings
+constraint(3).location =  [4.7021271782+0.9 0 -8.7];
+%constraint(3).location = [9.030588 0 -8.9+4.403853]; % Brodersen approx settings
 
 constraint(4)= constraintClass('Constraint4'); % Initialize ConstraintClass 
-%constraint(4).location = [0+0.9 0 -7];
-constraint(4).location = [0 0 -8.9+3]; % Brodersen approx settings
+constraint(4).location = [0+0.9 0 -7];
+%constraint(4).location = [0 0 -8.9+3]; % Brodersen approx settings
 
 % Translational PTO
 pto(1) = ptoClass('PTO1');                          % Initialize ptoClass for PTO1
 pto(1).stiffness = 0;                               % PTO Stiffness Coeff [N/m] - we use our own
 pto(1).damping = 0;                                 % PTO Damping Coeff [Ns/m]  - we use our own
-%pto(1).location =  [2.35106397378+0.9 0 -7.849998936];  % PTO Global Location [m]
-pto(1).location =  [9.030588/2 0 (-8.9+4.403853 + -8.9+3)/2];  % Brodersen approx settings
-%pto(1).orientation.z = [-4.7021271782/5 0 1.7/5];       % PTO orientation
-pto(1).orientation.z = [-9.030588/5 0 -1.403853/5];       % Brodersen approx settings
+pto(1).location =  [2.35106397378+0.9 0 -7.849998936];  % PTO Global Location [m]
+%pto(1).location =  [9.030588/2 0 (-8.9+4.403853 + -8.9+3)/2];  % Brodersen approx settings
+pto(1).orientation.z = [-4.7021271782/5 0 1.7/5];       % PTO orientation
+%pto(1).orientation.z = [-9.030588/5 0 -1.403853/5];       % Brodersen approx settings
 
 % PTO Motion Limits
 %pto(1).hardStops.lowerLimitSpecify = 'on';              % Turn Motion Limits On/Off
