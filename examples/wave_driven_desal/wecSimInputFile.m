@@ -11,7 +11,7 @@ simu = simulationClass();                       % Initialize Simulation Class
 simu.simMechanicsFile = 'examples/wave_driven_desal/waveDrivenDesal.slx';    % Specify Simulink Model File
 %simu.mode = 'normal';                          % Specify Simulation Mode ('normal','accelerator','rapid-accelerator')
 %simu.simMechanicsFile = 'examples\wave_driven_desal\YJpto.slx';
-simu.explorer = 'on';                           % Turn SimMechanics Explorer (on/off)
+simu.explorer = 'off';                           % Turn SimMechanics Explorer (on/off)
 simu.startTime = 0;                             % Simulation Start Time [s]
 simu.rampTime = 60;                              % Wave Ramp Time [s]
 simu.endTime = 300;                             % Simulation End Time [s]        
@@ -32,7 +32,7 @@ waves = waveClass('irregular');         % Initialize Wave Class and Specify Type
 waves.height = 2.64;                    % Significant Wave Height [m]
 waves.period = 9.86;                    % Peak Period [s]
 waves.spectrumType = 'PM';              % Specify Spectrum Type
-waves.phaseSeed = 1;
+waves.phaseSeed = 3;
 
 %waves.direction = [0,30,90];            % Wave Directionality [deg]
 %waves.spread = [0.1,0.2,0.7];           % Wave Directional Spreading [%]
