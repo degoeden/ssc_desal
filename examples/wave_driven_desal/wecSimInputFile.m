@@ -14,7 +14,7 @@ simu.simMechanicsFile = 'examples/wave_driven_desal/waveDrivenDesal.slx';    % S
 simu.explorer = 'off';                           % Turn SimMechanics Explorer (on/off)
 simu.startTime = 0;                             % Simulation Start Time [s]
 simu.rampTime = 60;                              % Wave Ramp Time [s]
-simu.endTime = 300;                             % Simulation End Time [s]        
+simu.endTime = 120;                             % Simulation End Time [s]        
 simu.solver = 'daessc';                          % simu.solver = 'ode4' for fixed step & simu.solver = 'ode45' for variable step - that's what WEC-Sim thinks...
 simu.dt = 0.1;                                  % Simulation Time-Step [s]
 simu.cicEndTime = 10;                           % Specify CI Time [s]
@@ -29,10 +29,12 @@ simu.saveWorkspace = 0;                         % I don't want WEC-Sim to save m
 
 % Irregular Waves using PM Spectrum
 waves = waveClass('irregular');         % Initialize Wave Class and Specify Type
-waves.height = 2.64;                    % Significant Wave Height [m]
-waves.period = 9.86;                    % Peak Period [s]
+%waves.height = 2.64;                    % Significant Wave Height [m]
+%waves.period = 9.86;                    % Peak Period [s]
+waves.height = Hs;                      % Significant Wave Height [m]
+waves.period = Tp;                      % Peak Period [s]
 waves.spectrumType = 'PM';              % Specify Spectrum Type
-waves.phaseSeed = 3;
+waves.phaseSeed = 1;
 
 %waves.direction = [0,30,90];            % Wave Directionality [deg]
 %waves.spread = [0.1,0.2,0.7];           % Wave Directional Spreading [%]
