@@ -7,7 +7,9 @@ component translational_mechanical_converter
 % volume. 
 %
 % Port A is the thermal liquid conserving ports associated with the chamber
-% inlet. Ports R and C are the mechanical translational conserving ports
+% inlet. Port B is an optional second inlet, off by default and enabled with
+% the "Enable port B" parameter, which lets the converter act as a mixing
+% chamber. Ports R and C are the mechanical translational conserving ports
 % associated with the moving interface and the converter casing,
 % respectively. Port H is the thermal conserving port associated with the
 % thermal mass of the liquid volume.
@@ -25,6 +27,10 @@ nodes
     R = foundation.mechanical.translational.translational; % R
 end
 
+nodes (ExternalAccess = none)
+    B = customization.solution.solution; % B
+end
+
 inputs (ExternalAccess = none)
     dM_X = {0,"kg/s"};  % dM_X
     dM_W = {0,"kg/s"};  % dM_W
@@ -40,7 +46,7 @@ end
 
 annotations
     [A, C, H] : Side = left;
-    R         : Side = right;
+    [R, B]    : Side = right;
     [Phi, M,P,T,X,dM_X,dM_W] : Side = bottom;
 end
 
@@ -52,13 +58,18 @@ parameters
     interface_area       = {0.01,     'm^2'}; % Interface cross-sectional area
     dead_volume          = {1e-5,     'm^3'}; % Dead volume
     area_A               = {0.01,     'm^2'}; % Cross-sectional area at port A
+    two_ports            = false;             % Enable port B
     pressure_spec = foundation.enum.pressure_spec.atmospheric; % Environment pressure specification
     %                                                            1 - atmospheric
     %                                                            2 - specified
     custom_ports = false;   % Set custom port lengths
 end
 parameters (ExternalAccess = none)
+    area_B = {0.01, 'm^2'}; % Cross-sectional area at port B
+end
+parameters (ExternalAccess = none)
     length_A = {1e-3,'m'};
+    length_B = {1e-3,'m'};
 end
 parameters (ExternalAccess = none)
     environment_pressure = {0.101325, 'MPa'}; % Environment pressure
@@ -89,11 +100,11 @@ end
 annotations
     UILayout = [UIGroup('physmod:simscape:library:tabs:Main', ...
         mech_orientation, length_init, interface_area, dead_volume, ...
-        area_A, pressure_spec, environment_pressure)
+        area_A, two_ports, area_B, pressure_spec, environment_pressure)
         UIGroup("Measurements",m_measure,p_measure,t_measure,x_measure)
         UIGroup('physmod:simscape:library:tabs:EffectsAndInitialConditions', ...
             dynamic_compressibility,dM_X_source,dM_W_source,phi_source,p0,T0,p_nominal,T_nominal)
-        UIGroup("Port Lengths",custom_ports,length_A)];
+        UIGroup("Port Lengths",custom_ports,length_A,length_B)];
 end
 
 
@@ -211,6 +222,30 @@ else
         port_length_A = sqrt(4*area_A/pi);
     end
 end
+if two_ports
+    annotations
+        [B, area_B] : ExternalAccess = modify;
+        [mdot_B, Phi_B, mdot_B_x] : ExternalAccess = observe;
+    end
+    equations
+        assert(area_B > 0)
+    end
+    if custom_ports
+        annotations
+            length_B : ExternalAccess = modify;
+        end
+        equations
+            assert(length_B > 0)
+        end
+        parameters (ExternalAccess = none)
+            port_length_B = length_B;
+        end
+    else
+        parameters (ExternalAccess = none)
+            port_length_B = sqrt(4*area_B/pi);
+        end
+    end
+end
 variables
         x_I   = {0,'kg/m^3'};           % Species concentration of liquid volume
 end
@@ -227,11 +262,19 @@ variables (Access = protected)
     p_I   = {value = p0, priority = p_priority}; % Pressure of liquid volume
     T_I   = {value = T0, priority = priority.high}; % Temperature of liquid volume
 end
+variables (Access = protected, ExternalAccess = none)
+    mdot_B = {0, 'kg/s'}; % Mass flow rate into port B
+    Phi_B  = {0, 'kW'  }; % Energy flow rate into port B
+    mdot_B_x = {0, 'kg/s'}; % Species flow rate into port B
+end
 
 branches
     mdot_A : A.mdot -> *;
+    mdot_B : B.mdot -> *;
     Phi_A  : A.Phi  -> *;
+    Phi_B  : B.Phi  -> *;
     mdot_A_x : A.mdot_x -> *;
+    mdot_B_x : B.mdot_x -> *;
     Q_H    : H.Q    -> *;
     interface_force : R.f      -> C.f;
 end
@@ -272,10 +315,10 @@ if ~dynamic_compressibility
     
     equations
         % Mass balance
-        rho_nominal * der_volume == mdot_A + dM_W;
+        rho_nominal * der_volume == mdot_A + mdot_B + dM_W;
 
         % Energy conservation
-        der(u_I) * rho_nominal * volume + rho_nominal * u_I * der_volume == Phi_A + Q_H - p_I * der_volume + Phi;
+        der(u_I) * rho_nominal * volume + rho_nominal * u_I * der_volume == Phi_A + Phi_B + Q_H - p_I * der_volume + Phi;
 
         % Specific internal energy
         u_I == tablelookup(A.T_TLU, A.p_TLU, A.u_TLU, T_I, p_I, interpolation = linear, extrapolation = linear);
@@ -304,22 +347,23 @@ else % dynamic_compressibility
 
     equations
         % Mass conservation
-        (der(p_I)/beta_I - der(T_I)*alpha_I) * rho_I * volume + rho_I * der_volume == mdot_A + dM_W;
+        (der(p_I)/beta_I - der(T_I)*alpha_I) * rho_I * volume + rho_I * der_volume == mdot_A + mdot_B + dM_W;
 
         % Energy conservation
-        der(p_I)*dUdp + der(T_I)*dUdT + rho_I * h_I * der_volume == Phi_A + Q_H + Phi;
+        der(p_I)*dUdp + der(T_I)*dUdT + rho_I * h_I * der_volume == Phi_A + Phi_B + Q_H + Phi;
     end
 end
 
 equations
     % Assume no flow resistance
     A.p == p_I;
-    
+    B.p == p_I;
+
     % Assume no thermal resistance
     H.T == T_I;
-  
+
     % Conservation of tracked species - do we move? I think no...
-    mdot_x == mdot_A_x + dM_X;
+    mdot_x == mdot_A_x + mdot_B_x + dM_X;
     der(x_I) * volume + der_volume * x_I == mdot_x;
 
     % Signal outputs
@@ -372,6 +416,29 @@ equations
     convection_A.mdot_x == mdot_A_x;
     convection_A.u_I  == u_I;
     convection_A.x_I  == x_I;
+end
+
+if two_ports
+    % Internal component that calculates energy convection at port B
+    components (ExternalAccess = none)
+        convection_B = customization.solution.port_convection(flow_area = area_B, length_scale = port_length_B);
+    end
+    connections
+        connect(B, convection_B.port)
+    end
+    % Equate variables for internal component that calculates energy convection at port B
+    equations
+        convection_B.mdot == mdot_B;
+        convection_B.Phi  == Phi_B;
+        convection_B.mdot_x == mdot_B_x;
+        convection_B.u_I  == u_I;
+        convection_B.x_I  == x_I;
+    end
+else
+    equations
+        B.T == T_I;
+        B.x == x_I;
+    end
 end
 
 end
