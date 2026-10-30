@@ -1,8 +1,3 @@
-% Set Options
-PTO_arch = "basic"; resistance = "low"; membrane = "solution";
-feed_x = 36; perm_x = 0.7;  % feed and permeate concentrations
-Hs = 2.64; Tp = 9.86;       % wave settings
-
 load_system('waveDrivenDesal.slx');
 % Select PTO Architecture
 set_param('waveDrivenDesal/SWRO PTO', 'Commented', 'on');
@@ -37,7 +32,7 @@ switch membrane
 end
 
 % Other settings
-set_param('waveDrivenDesal','SimscapeLogType','none');
+set_param('waveDrivenDesal','SimscapeLogType','all');
 
 % Close and Run
 save_system('waveDrivenDesal', 'SaveDirtyReferencedModels','on')
@@ -49,3 +44,4 @@ function str = decimalToString(num)
     str = replace(sprintf("%.2f", num), ".", "_");
 end
 save(strcat(PTO_arch,resistance,membrane,decimalToString(Hs),decimalToString(Tp),decimalToString(feed_x)),'simout')
+
