@@ -1,5 +1,5 @@
 % Set Options
-PTO_arch = "basic"; resistance = "low"; membrane = "solution";
+PTO_arch = "bro"; resistance = ""; membrane = "solution";
 feed_x = 36; perm_x = 0.7;  % feed and permeate concentrations
 Hs = 2.64; Tp = 9.86;       % wave settings
 
@@ -7,8 +7,12 @@ Hs = 2.64; Tp = 9.86;       % wave settings
 function str = decimalToString(num)
     str = replace(sprintf("%.2f", num), ".", "_");
 end
-load(strcat(PTO_arch,resistance,membrane,decimalToString(Hs),decimalToString(Tp),decimalToString(feed_x)))
+savename = strcat(PTO_arch,resistance,membrane,decimalToString(Hs),decimalToString(Tp),decimalToString(feed_x));
+load(savename + ".mat")
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Flows Plot
+figure('Name','Flows')
 t_v = simout.Velocity.Time;
 v_in =  simout.Velocity.Data;
 t = simout.In_Flow.Time;
@@ -16,7 +20,6 @@ Q_in = simout.In_Flow.Data;
 Q_perm = simout.Perm_Flow.Data;
 Q_brine = simout.Brine_Flow.Data;
 Q_PRV = simout.PRV_Flow.Data;
-figure('Name','Flows')
 c = load_colors();
 colororder([1 1 1;c.vel])
 %yyaxis left
@@ -32,10 +35,21 @@ ylim([0,0.3])
 %xlim([200,250])
 xlabel('Time [s]')
 legend('location','best')
+exportgraphics(gcf, savename + '_flows.png', 'ContentType', 'vector');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Pressure Plot
 figure('Name','Pressure')
 line(t,simout.Feed_Pressure.Data/1e6,'Color',c.vel,'LineWidth',2)
 %xlim([200,250])
 ylabel('Pressure [MPa]')
+xlabel('Time [s]')
+exportgraphics(gcf, savename + '_pressure.png', 'ContentType', 'vector');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Concentration Plot
 figure('Name','Concentrations');
 colororder([c.brine;c.perm])
 yyaxis left
@@ -46,20 +60,27 @@ yyaxis right
 line(t,simout.Perm_Concentration.Data*1e3,'DisplayName','Permeate','LineWidth',2)
 ylabel('Salt Concentration [mg/L]')
 %xlim([200,250])
+xlabel('Time [s]')
 legend('Location','best')
+exportgraphics(gcf, savename + '_concentration.png', 'ContentType', 'vector');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Energy Plot
+figure('Name','basic energy')
 t = simout.In_Flow.Time;
 E_in = trapz(t,simout.In_Flow.Data.*simout.Feed_Pressure.Data);
 E_prv = trapz(t,simout.PRV_Flow.Data.*simout.Feed_Pressure.Data);
 E_brine = trapz(t,simout.Brine_Flow.Data.*simout.Brine_Pressure.Data);
 E_perm = trapz(t,simout.Perm_Flow.Data.*simout.Feed_Pressure.Data);
 E_other = max([E_in - E_prv - E_brine - E_perm,0]);
-figure('Name','basic energy')
 energy = [E_perm,E_brine,E_prv,E_other];
 energy_initial = energy;
 labels = {'Permeate','Brine','PRV','Other'};
 p = piechart(energy,labels,ExplodedWedges=2);
 p.ColorOrder = [c.perm;c.brine;c.prv;c.other];
-
+exportgraphics(gcf, savename + '_energy.png', 'ContentType', 'vector');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function c = load_colors()
     c = struct();
