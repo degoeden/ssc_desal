@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
 
-matlab25 -batch "run('./scripts/run_wecsim.m')"
+module load matlab/R2025b 
+matlab -nojvm -batch "run('./scripts/run_wecsim.m')"
