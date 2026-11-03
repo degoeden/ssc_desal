@@ -5,7 +5,7 @@ savename = strcat(PTO_arch,resistance,membrane,decimalToString(Hs),decimalToStri
 
 try
     MODEL_NAME = 'waveDrivenDesal';
-    OUTFILE = strcat("/mnt/drive2/degoede/waveDrivenDesal_",savename);
+    OUTFILE = strcat("/scratch/mhaji_root/mhaji0/degoeden/waveDrivenDesal_",savename);
     s = settings;
     s.simscape.StreamToDisk.PersonalValue = true;
 
@@ -14,7 +14,6 @@ try
 
     % Project is one directory above ./scripts/
     projectDir = fileparts(scriptDir);
-
     openProject(fullfile(projectDir, 'ssc_desal.prj'));
 
     % WEC-Sim source script
@@ -41,11 +40,22 @@ try
 
 catch ME
     fprintf(2, '%s\n', getReport(ME, 'extended'));
-    exit(1);
+    cleanupAndExit(1);
 end
-
-exit(0);
-
+cleanupAndExit(0);
 function str = decimalToString(num)
     str = replace(sprintf("%.2f", num), ".", "_");
+end
+function cleanupAndExit(code)
+    try
+        bdclose('all');                                   % close all models, discarding changes
+        Simulink.data.dictionary.closeAll('-discard');    % in case the project uses data dictionaries
+        proj = matlab.project.rootProject;
+        if ~isempty(proj)
+            close(proj);
+        end
+    catch cleanupErr
+        fprintf(2, 'Cleanup warning: %s\n', cleanupErr.message);
+    end
+    exit(code, 'force');
 end
