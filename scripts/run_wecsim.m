@@ -37,6 +37,7 @@ try
     simscape.logging.export(node, OUTFILE);
 
     fprintf('Exported simlog to: %s.mldatx\n', OUTFILE);
+    close_system('waveDrivenDesal',0)
 
 catch ME
     fprintf(2, '%s\n', getReport(ME, 'extended'));
