@@ -33,6 +33,7 @@ end
 
 % Other settings
 set_param('waveDrivenDesal','SimscapeLogType','all');
+set_param('waveDrivenDesal','SimscapeLogDecimation', 10);
 
 % Close and Run
 save_system('waveDrivenDesal', 'SaveDirtyReferencedModels','on')
