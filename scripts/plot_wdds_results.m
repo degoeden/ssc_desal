@@ -3,6 +3,11 @@ PTO_arch = "bro"; resistance = ""; membrane = "solution";
 feed_x = 36; perm_x = 0.7;  % feed and permeate concentrations
 Hs = 2.64; Tp = 9.86;       % wave settings
 
+% Project is one directory above ./scripts/
+scriptDir  = fileparts(mfilename('fullpath'));
+projectDir = fileparts(scriptDir);
+openProject(fullfile(projectDir, 'ssc_desal.prj'));
+
 % Load Results
 function str = decimalToString(num)
     str = replace(sprintf("%.2f", num), ".", "_");
