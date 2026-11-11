@@ -1,7 +1,7 @@
 % Set Options
 PTO_arch = "bro"; resistance = ""; membrane = "solution";
 feed_x = 36; perm_x = 0.7;  % feed and permeate concentrations
-Hs = 2.64; Tp = 9.86;       % wave settings
+Hs = 2.53; Tp = 9.19;       % wave settings
 
 % Project is one directory above ./scripts/
 scriptDir  = fileparts(mfilename('fullpath'));
@@ -13,7 +13,7 @@ function str = decimalToString(num)
     str = replace(sprintf("%.2f", num), ".", "_");
 end
 savename = strcat(PTO_arch,resistance,membrane,decimalToString(Hs),decimalToString(Tp),decimalToString(feed_x));
-load(savename + ".mat")
+load("data/completed/" + savename + ".mat")
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Flows Plot
