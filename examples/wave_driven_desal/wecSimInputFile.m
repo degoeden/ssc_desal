@@ -14,7 +14,7 @@ simu.simMechanicsFile = 'examples/wave_driven_desal/waveDrivenDesal.slx';    % S
 simu.explorer = 'off';                           % Turn SimMechanics Explorer (on/off)
 simu.startTime = 0;                             % Simulation Start Time [s]
 simu.rampTime = 60;                              % Wave Ramp Time [s]
-simu.endTime = 200;                             % Simulation End Time [s]        
+simu.endTime = 3600;                             % Simulation End Time [s]        
 simu.solver = 'daessc';                          % simu.solver = 'ode4' for fixed step & simu.solver = 'ode45' for variable step - that's what WEC-Sim thinks...
 simu.dt = 0.1;                                  % Simulation Time-Step [s]
 simu.cicEndTime = 10;                           % Specify CI Time [s]

@@ -18,8 +18,8 @@ TP=(13.23112333956173 10.234793700202095 22.584459732902232 13.81664042372318 10
 #    sbatch --job-name=$PTO_ARCH$RESISTANCE$MEMBRANE$FEED_X$i scripts/submit_run.sbat "$PTO_ARCH" "$RESISTANCE" "$MEMBRANE" "$FEED_X" "$PERM_X" "${HS[$i]}" "${TP[$i]}"
 #done
 
-# Sea-state indices to run (0-based)
-IDX=(2 3 4 6 7 8 12 14 16)
+# Sea-state indices to run
+IDX=(14)
 
 for i in "${IDX[@]}"; do
     sbatch --job-name="${PTO_ARCH}${RESISTANCE}${MEMBRANE}${FEED_X}${i}" scripts/submit_run.sbat "$PTO_ARCH" "$RESISTANCE" "$MEMBRANE" "$FEED_X" "$PERM_X" "${HS[$i]}" "${TP[$i]}"

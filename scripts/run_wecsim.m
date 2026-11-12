@@ -32,7 +32,7 @@ try
     fprintf('Case: %s\n', savename);
 
     MODEL_NAME = 'waveDrivenDesal';
-    %OUTFILE = "/scratch/mhaji_root/mhaji0/degoeden/waveDrivenDesal_" + savename;
+    OUTFILE = "/scratch/mhaji_root/mhaji0/degoeden/waveDrivenDesal_" + savename;
     s = settings;
     s.simscape.StreamToDisk.PersonalValue = true;
 
