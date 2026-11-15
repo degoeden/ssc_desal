@@ -46,7 +46,15 @@ try
 
     % Run Simulation and save results
     wecSim
-    save(savename, 'simout');
+    if exist('simout', 'var')
+        save(savename, 'simout');
+    elseif exist('simout1', 'var')
+        save(savename, 'simout1');
+    elseif exist('simout2', 'var')
+        save(savename, 'simout2');
+    else
+        warning('No simout variable found (simout, simout1, or simout2).');
+    end
 
     % Get Simscape log
     node = simscape.logging.getSimulationLog(MODEL_NAME);
