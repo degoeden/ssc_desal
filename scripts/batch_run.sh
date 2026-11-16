@@ -1,7 +1,7 @@
 #!/bin/bash
 module load matlab/R2025b
 
-PTO_ARCH=bro
+PTO_ARCH=eru
 RESISTANCE=_
 MEMBRANE=fixed
 FEED_X=36
