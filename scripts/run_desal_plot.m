@@ -12,14 +12,15 @@ resistance = '';
 membrane   = 'solution';
 feed_x     = 36; 
 
-color_by   = 'concentration';
+color_by   = 'brine';
 
 % Fixed scales so plots of different designs are directly comparable.
 % Leave [] to autoscale to this dataset.
 prod_max   = [2230];                 % m3/day drawn at the max bubble size
 clim_fixed = struct('rr',            [0,0.6], ...   
                     'rrplus',        [0,0.6], ...   
-                    'concentration', [250,1200]);      
+                    'concentration', [250,1200],...
+                    'brine',[36,52]);      
 
 % Seastate grid
 Hs_vec = [1.7707093836756636 1.4757467428690545 1.1146362808579522 0.8000118789813867 4.635898379970542 2.574394045126751 2.5349366630610004 1.001865613432608 1.0779023831039394 1.1922186822432743 2.063874210861717 1.681761551332142 3.315881129382017 2.732203169230346 6.713700854700875 1.91849027165957 0.9823690678767296 1.3107230273390404 3.193034002888281 3.8642559652928448];
@@ -33,7 +34,8 @@ N          = numel(Hs_vec);
 production = nan(1, N);   % m3/day
 rr         = nan(1, N);   % (-)
 rr_plus    = nan(1, N);   % (-)
-perm_conc  = nan(1, N);   % g/kg
+perm_conc  = nan(1, N);   % mg/L
+brine_conc = nan(1, N);   % g/L
 labels     = cell(1, N);
 
 for i = 1:N
@@ -50,7 +52,17 @@ for i = 1:N
         continue
     end
 
-    load(fpath, 'simout');
+    S = load(fpath);
+    if isfield(S, 'simout')
+        simout = S.simout;
+    elseif isfield(S, 'simout1')
+        simout = S.simout1;
+    elseif isfield(S, 'simout2')
+        simout = S.simout2;
+    else
+        warning('No simout variable in %s, skipping', fpath);
+        continue
+    end
 
     % --- extract timeseries ---
     t_q    = simout.In_Flow.Time;       % s
@@ -64,7 +76,7 @@ for i = 1:N
     V_brine= trapz(t_q, Q_brine);      % total brine in [m3]
     rr(i) = V_perm / (V_perm+V_brine);
 
-    disp((V_perm - trapz(t_q, Q_perm))/V_perm)
+    %disp((V_perm - trapz(t_q, Q_perm))/V_perm)
 
     % --- daily production: scale permeate volume to a 24-hour equivalent ---
     sim_duration_s     = t_q(end) - t_q(1);
@@ -77,6 +89,11 @@ for i = 1:N
     if strcmpi(color_by, 'concentration')
         c_perm = simout.Perm_Concentration.Data;   % g/L
         perm_conc(i) = trapz(t_q, c_perm .* max(Q_perm, 0)) / V_perm * 1e3; % mg/L
+    end
+
+    if strcmpi(color_by, 'brine')
+        c_brine = simout.Brine_Concentration.Data;   % g/L
+        brine_conc(i) = trapz(t_q, c_brine .* Q_brine) / V_brine; % mg/L
     end
 
     if V_perm <= 0
@@ -97,6 +114,7 @@ prod_plot  = production(valid);
 rr_plot    = rr(valid);
 rrplus_plot= rr_plus(valid);
 conc_plot  = perm_conc(valid);
+brine_plot = brine_conc(valid);
 lbl_plot   = labels(valid);
 
 if sum(valid) == 0
@@ -111,6 +129,10 @@ if strcmpi(color_by, 'concentration')
     color_plot  = conc_plot;
     color_label = 'Permeate concentration (mg/L)';
     color_lim   = clim_fixed.concentration;
+elseif strcmpi(color_by, 'brine')
+    color_plot  = brine_plot;
+    color_label = 'Brine concentration (g/L)';
+    color_lim   = clim_fixed.brine;
 elseif strcmpi(color_by, 'rr+')
     color_plot  = rrplus_plot;
     color_label = 'RR+ (-)';

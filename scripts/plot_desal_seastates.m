@@ -46,9 +46,9 @@ function fig = plot_desal_seastates(Hs, Tp, production, rr_plus, varargin)
     addRequired(p, 'Tp',         @(x) isnumeric(x) && isvector(x));
     addRequired(p, 'production', @(x) isnumeric(x) && isvector(x));
     addRequired(p, 'rr_plus',    @(x) isnumeric(x) && isvector(x));
-    addParameter(p, 'ColorBy',         'rr',      @(x) any(strcmpi(x, {'rr','rr+','concentration'})));
+    addParameter(p, 'ColorBy',         'rr',      @(x) any(strcmpi(x, {'rr','rr+','concentration','brine'})));
     addParameter(p, 'Labels',          [],        @(x) iscell(x) || isstring(x));
-    addParameter(p, 'Colormap',        'nebula',  @(x) ischar(x) || isstring(x) || (isnumeric(x) && size(x,2)==3));
+    addParameter(p, 'Colormap',        'jet',  @(x) ischar(x) || isstring(x) || (isnumeric(x) && size(x,2)==3));
     addParameter(p, 'MaxBubbleArea',   1600,       @isnumeric);
     addParameter(p, 'ProductionMax',   [],        @(x) isempty(x) || (isnumeric(x) && isscalar(x) && x > 0));
     addParameter(p, 'CLim',            [],        @(x) isempty(x) || (isnumeric(x) && numel(x)==2 && x(2) > x(1)));
@@ -64,6 +64,11 @@ function fig = plot_desal_seastates(Hs, Tp, production, rr_plus, varargin)
     if strcmpi(opt.ColorBy, 'concentration')
         if ismember('Colormap', p.UsingDefaults), opt.Colormap = 'nebula'; end
         if ismember('RRLabel',  p.UsingDefaults), opt.RRLabel  = 'Permeate concentration (mg/L)'; end
+    end
+
+    if strcmpi(opt.ColorBy, 'brine')
+        if ismember('Colormap', p.UsingDefaults), opt.Colormap = 'nebula'; end
+        if ismember('RRLabel',  p.UsingDefaults), opt.RRLabel  = 'Brine concentration (g/L)'; end
     end
 
     % --- flatten to column vectors ---

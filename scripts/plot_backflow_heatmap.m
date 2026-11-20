@@ -15,7 +15,8 @@ function fig = plot_backflow_heatmap(csv_path, varargin)
 %   Title      Plot title          (default: 'Backflow loss fraction by PTO and seastate')
 %   Threshold  Value above which a cell is annotated with '>'  (default: 1.0)
 %   Colormap   Colormap name or Nx3 matrix  (default: custom white->orange->red)
-%   CLim       [min max] colour axis limits  (default: [0 1], cells >1 are capped)
+%   CLim       [min max] colour axis limits, log scale  (default: [1e-4 1];
+%              cells >max are capped, cells <min (incl. zeros) are floored)
 %
 %   Output
 %   ------
@@ -33,7 +34,7 @@ function fig = plot_backflow_heatmap(csv_path, varargin)
                                  @(x) ischar(x) || isstring(x));
     addParameter(p, 'Threshold', 1.0,   @isnumeric);
     addParameter(p, 'Colormap',  [],    @(x) isempty(x) || ischar(x) || isstring(x) || (isnumeric(x) && size(x,2)==3));
-    addParameter(p, 'CLim',      [0 1], @(x) isnumeric(x) && numel(x)==2);
+    addParameter(p, 'CLim',      [1e-4 1], @(x) isnumeric(x) && numel(x)==2 && all(x > 0) && x(1) < x(2));
     parse(p, csv_path, varargin{:});
     opt = p.Results;
 
@@ -60,8 +61,9 @@ function fig = plot_backflow_heatmap(csv_path, varargin)
         cmap = opt.Colormap;
     end
 
-    % --- cap display values at CLim(2) but keep originals for annotation ---
-    data_display = min(data, opt.CLim(2));
+    % --- clamp display values into CLim (log scale can't show zeros);
+    %     keep originals for annotation ---
+    data_display = min(max(data, opt.CLim(1)), opt.CLim(2));
 
     % --- figure ---
     fig = figure('Color', 'w');
@@ -69,15 +71,21 @@ function fig = plot_backflow_heatmap(csv_path, varargin)
 
     imagesc(ax, data_display);
     colormap(ax, cmap);
+    ax.ColorScale = 'log';
     clim(ax, opt.CLim);
 
     cb = colorbar(ax);
     cb.Label.String   = 'Loss fraction (-)';
     cb.Label.FontSize = 10;
     cb.FontSize       = 9;
-    % mark the cap on the colourbar
-    cb.Ticks = [0, 0.25, 0.5, 0.75, 1.0];
-    cb.TickLabels = {'0', '0.25', '0.5', '0.75', '≥1 (net –ve)'};
+    % decade ticks; mark the floor and cap on the colourbar
+    ticks = 10.^(ceil(log10(opt.CLim(1))):floor(log10(opt.CLim(2))));
+    ticks = unique([opt.CLim(1), ticks, opt.CLim(2)]);
+    labels = arrayfun(@(t) sprintf('%g', t), ticks, 'UniformOutput', false);
+    labels{1}   = ['≤' labels{1}];
+    labels{end} = ['≥' labels{end} ' (net –ve)'];
+    cb.Ticks      = ticks;
+    cb.TickLabels = labels;
 
     % --- cell annotations ---
     for r = 1:n_pto
